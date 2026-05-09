@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "duobook",
+      "runtimeExecutable": "/Users/heeta/.nvm/versions/node/v24.15.0/bin/node",
+      "runtimeArgs": ["/Users/heeta/Desktop/family-budget/node_modules/.bin/next", "dev", "--port", "3001"],
+      "port": 3001
+    }
+  ]
+}

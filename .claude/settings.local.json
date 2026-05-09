@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@14 . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git)",
+      "Bash(export PATH=\"/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:$PATH\")",
+      "Bash(npm --version)",
+      "Read(//opt/**)",
+      "Bash(ls /nix/)",
+      "Read(//Users/heeta/.nvm/versions/**)",
+      "Read(//Users/heeta/.volta/**)",
+      "Read(//Users/heeta/.local/share/mise/installs/**)",
+      "Bash(export PATH=\"/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:$HOME/.nvm/versions/node/*/bin:$PATH\")",
+      "Bash(mkdir -p /Users/heeta/Desktop/family-budget/.claude)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(~/.nvm/versions/node/v24.15.0/bin/node ~/.nvm/versions/node/v24.15.0/bin/npm run build)",
+      "Bash(/Users/heeta/.nvm/versions/node/v24.15.0/bin/npx next *)",
+      "Bash(export PATH=\"/Users/heeta/.nvm/versions/node/v24.15.0/bin:$PATH\")",
+      "Bash(npm run *)",
+      "Bash(vercel --prod)",
+      "Bash(npm install *)",
+      "Bash(gh auth *)",
+      "Bash(git config *)"
+    ]
+  }
+}
