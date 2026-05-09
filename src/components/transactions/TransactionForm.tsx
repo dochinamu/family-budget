@@ -143,25 +143,26 @@ export function TransactionForm({ householdId, transaction }: TransactionFormPro
           ))}
         </div>
 
-        {/* 금액 — 투명 input으로 붙여넣기 가능 */}
+        {/* 금액 */}
         <div className="text-center py-2 relative">
           <input
             type="text"
             inputMode="none"
-            value=""
-            readOnly
+            value={amountStr}
+            onChange={() => {}}
             onPaste={(e) => {
               e.preventDefault();
               const raw = e.clipboardData.getData("text").replace(/[^0-9]/g, "");
               if (raw) setAmountStr(String(Math.min(Number(raw), 99_999_999)));
             }}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-text"
-            aria-label="금액 붙여넣기"
+            className="absolute inset-0 w-full h-full opacity-0"
+            style={{ caretColor: "transparent" }}
           />
           <span className={cn("text-4xl font-bold tracking-tight", amountStr ? "text-gray-900" : "text-gray-300")}>
             {displayAmount}
           </span>
           <span className="text-xl text-gray-400 ml-1">원</span>
+          <p className="text-[10px] text-gray-400 mt-0.5">꾹 눌러서 붙여넣기</p>
         </div>
 
         {/* 날짜 */}
