@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAppStore } from "@/stores";
@@ -32,22 +32,6 @@ const FALLBACK_CATEGORIES: Category[] = [
   { id: "f14",household_id: "", name: "용돈/선물", icon: "🎁", type: "income",  color: "#34d399", is_default: true },
 ];
 
-const RECENT_KEY = (householdId: string) => `recentCats_${householdId}`;
-const MAX_RECENT = 5;
-
-function loadRecentCats(householdId: string): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(RECENT_KEY(householdId)) ?? "[]");
-  } catch {
-    return [];
-  }
-}
-
-function saveRecentCat(householdId: string, catId: string) {
-  const prev = loadRecentCats(householdId).filter((id) => id !== catId);
-  localStorage.setItem(RECENT_KEY(householdId), JSON.stringify([catId, ...prev].slice(0, MAX_RECENT)));
-}
-
 function sortByRecent(cats: Category[], recentIds: string[]): Category[] {
   const recentSet = new Set(recentIds);
   const recent = recentIds.map((id) => cats.find((c) => c.id === id)).filter(Boolean) as Category[];
@@ -57,7 +41,7 @@ function sortByRecent(cats: Category[], recentIds: string[]): Category[] {
 
 export function TransactionForm({ householdId, transaction }: TransactionFormProps) {
   const router = useRouter();
-  const { categories, addToast } = useAppStore();
+  const { categories, transactions, addToast } = useAppStore();
   const isEdit = !!transaction;
 
   const [type, setType] = useState<TransactionType>(transaction?.type ?? "expense");
@@ -67,11 +51,20 @@ export function TransactionForm({ householdId, transaction }: TransactionFormPro
   const [memo, setMemo] = useState(transaction?.memo ?? "");
   const [writtenBy, setWrittenBy] = useState(transaction?.written_by ?? "");
   const [loading, setLoading] = useState(false);
-  // localStorage는 SSR에서 없으므로 useEffect로 초기화
-  const [recentCatIds, setRecentCatIds] = useState<string[]>([]);
-  useEffect(() => {
-    setRecentCatIds(loadRecentCats(householdId));
-  }, [householdId]);
+
+  // 최근 사용 카테고리: Zustand의 transactions에서 직접 추출 (localStorage 불필요)
+  const recentCatIds = useMemo(() => {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const tx of transactions) {
+      if (!seen.has(tx.category_id)) {
+        seen.add(tx.category_id);
+        result.push(tx.category_id);
+        if (result.length >= 5) break;
+      }
+    }
+    return result;
+  }, [transactions]);
 
   // Supabase 미연결 시 fallback 카테고리 사용
   const allCategories = categories.length > 0 ? categories : FALLBACK_CATEGORIES;
@@ -133,8 +126,6 @@ export function TransactionForm({ householdId, transaction }: TransactionFormPro
 
     setLoading(false);
     if (error) { addToast("저장 실패: " + error.message, "error"); return; }
-    saveRecentCat(householdId, categoryId);
-    setRecentCatIds(loadRecentCats(householdId));
     addToast(isEdit ? "수정되었습니다" : "추가되었습니다", "success");
     router.back();
   }
