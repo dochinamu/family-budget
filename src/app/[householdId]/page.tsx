@@ -64,7 +64,7 @@ export default function HomePage({ params }: { params: { householdId: string } }
         <section>
           <div className="flex items-center justify-between mb-2 px-1">
             <h3 className="text-sm font-semibold text-gray-500">최근 내역</h3>
-            <Link href={`/${householdId}/transactions`} className="text-xs text-blue-500">전체보기</Link>
+            <Link href={`/${householdId}/transactions?month=${month}`} className="text-xs text-blue-500">전체보기</Link>
           </div>
           <Card>
             {recent.length === 0 ? (

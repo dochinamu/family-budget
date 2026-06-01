@@ -49,6 +49,12 @@ export function BottomNav() {
   const params = useParams();
   const hid = params.householdId as string;
 
+  // 내역 추가/수정 폼 페이지에서는 BottomNav 숨김 (submit 버튼과 겹침 방지)
+  const isFormPage =
+    pathname.includes("/transactions/new") ||
+    /\/transactions\/[^/]+$/.test(pathname);
+  if (isFormPage) return null;
+
   return (
     <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-gray-100 z-40">
       <div className="flex">

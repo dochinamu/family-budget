@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useTransactions } from "@/hooks/useTransactions";
 import { TransactionItem } from "@/components/transactions/TransactionItem";
 import { Card } from "@/components/ui/Card";
@@ -11,7 +12,9 @@ const MONTHS_KR = ["1월","2월","3월","4월","5월","6월","7월","8월","9월
 
 export default function TransactionsPage({ params }: { params: { householdId: string } }) {
   const { householdId } = params;
-  const [month, setMonth] = useState(getCurrentMonth());
+  const searchParams = useSearchParams();
+  const initialMonth = searchParams.get("month") ?? getCurrentMonth();
+  const [month, setMonth] = useState(initialMonth);
   const [filter, setFilter] = useState<"all" | "expense" | "income">("all");
   const { transactions, summary } = useTransactions(householdId, month);
 

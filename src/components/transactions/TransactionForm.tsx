@@ -13,7 +13,7 @@ interface TransactionFormProps {
   transaction?: Transaction;
 }
 
-const NUM_PAD = ["1","2","3","4","5","6","7","8","9","00","0","⌫"];
+const NUM_PAD = ["1","2","3","4","5","6","7","8","9","C","0","⌫"];
 
 const FALLBACK_CATEGORIES: Category[] = [
   { id: "f1", household_id: "", name: "식비",     icon: "🍚", type: "expense", color: "#ef4444", is_default: true },
@@ -32,6 +32,29 @@ const FALLBACK_CATEGORIES: Category[] = [
   { id: "f14",household_id: "", name: "용돈/선물", icon: "🎁", type: "income",  color: "#34d399", is_default: true },
 ];
 
+const RECENT_KEY = (householdId: string) => `recentCats_${householdId}`;
+const MAX_RECENT = 5;
+
+function loadRecentCats(householdId: string): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_KEY(householdId)) ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveRecentCat(householdId: string, catId: string) {
+  const prev = loadRecentCats(householdId).filter((id) => id !== catId);
+  localStorage.setItem(RECENT_KEY(householdId), JSON.stringify([catId, ...prev].slice(0, MAX_RECENT)));
+}
+
+function sortByRecent(cats: Category[], recentIds: string[]): Category[] {
+  const recentSet = new Set(recentIds);
+  const recent = recentIds.map((id) => cats.find((c) => c.id === id)).filter(Boolean) as Category[];
+  const rest = cats.filter((c) => !recentSet.has(c.id));
+  return [...recent, ...rest];
+}
+
 export function TransactionForm({ householdId, transaction }: TransactionFormProps) {
   const router = useRouter();
   const { categories, addToast } = useAppStore();
@@ -44,10 +67,18 @@ export function TransactionForm({ householdId, transaction }: TransactionFormPro
   const [memo, setMemo] = useState(transaction?.memo ?? "");
   const [writtenBy, setWrittenBy] = useState(transaction?.written_by ?? "");
   const [loading, setLoading] = useState(false);
+  // localStorage는 SSR에서 없으므로 useEffect로 초기화
+  const [recentCatIds, setRecentCatIds] = useState<string[]>([]);
+  useEffect(() => {
+    setRecentCatIds(loadRecentCats(householdId));
+  }, [householdId]);
 
   // Supabase 미연결 시 fallback 카테고리 사용
   const allCategories = categories.length > 0 ? categories : FALLBACK_CATEGORIES;
-  const filteredCats = allCategories.filter((c) => c.type === type);
+  const filteredCats = sortByRecent(
+    allCategories.filter((c) => c.type === type),
+    recentCatIds
+  );
 
   // 수정 모드: Supabase 카테고리가 뒤늦게 로드되면 type/categoryId 동기화
   useEffect(() => {
@@ -62,8 +93,8 @@ export function TransactionForm({ householdId, transaction }: TransactionFormPro
   function handleNumPad(key: string) {
     if (key === "⌫") {
       setAmountStr((s) => s.slice(0, -1));
-    } else if (key === "00") {
-      setAmountStr((s) => (s ? s + "00" : s));
+    } else if (key === "C") {
+      setAmountStr("");
     } else {
       setAmountStr((s) => {
         const next = s + key;
@@ -102,6 +133,8 @@ export function TransactionForm({ householdId, transaction }: TransactionFormPro
 
     setLoading(false);
     if (error) { addToast("저장 실패: " + error.message, "error"); return; }
+    saveRecentCat(householdId, categoryId);
+    setRecentCatIds(loadRecentCats(householdId));
     addToast(isEdit ? "수정되었습니다" : "추가되었습니다", "success");
     router.back();
   }
@@ -200,7 +233,7 @@ export function TransactionForm({ householdId, transaction }: TransactionFormPro
                   : "border-transparent bg-white text-gray-600 shadow-sm"
               )}
             >
-              <span className="text-base">{cat.icon}</span>
+              <span className="w-5 h-5 flex items-center justify-center text-[16px] leading-none overflow-hidden">{cat.icon}</span>
               {cat.name}
             </button>
           ))}
@@ -240,7 +273,10 @@ export function TransactionForm({ householdId, transaction }: TransactionFormPro
           <button
             key={key}
             onPointerDown={() => handleNumPad(key)}
-            className="h-14 bg-white flex items-center justify-center text-lg font-medium text-gray-800 active:bg-gray-100 transition-colors select-none"
+            className={cn(
+              "h-14 bg-white flex items-center justify-center text-lg font-medium active:bg-gray-100 transition-colors select-none",
+              key === "C" ? "text-red-400" : "text-gray-800"
+            )}
           >
             {key}
           </button>
