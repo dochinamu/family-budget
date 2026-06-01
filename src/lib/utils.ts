@@ -17,8 +17,16 @@ export function getCurrentMonth(): string {
 export function getMonthRange(month: string): { start: string; end: string } {
   const [y, m] = month.split("-").map(Number);
   const start = `${month}-01`;
-  const end = new Date(y, m, 0).toISOString().split("T")[0];
+  // toISOString()은 UTC 변환으로 한국(UTC+9)에서 날짜가 하루 밀림 → getDate()로 로컬 날짜 직접 사용
+  const lastDay = new Date(y, m, 0).getDate();
+  const end = `${month}-${String(lastDay).padStart(2, "0")}`;
   return { start, end };
+}
+
+// toISOString() UTC 변환 없이 로컬 날짜 문자열 반환 (YYYY-MM-DD)
+export function getLocalDateStr(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 export function formatDateLabel(dateStr: string): string {

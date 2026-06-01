@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAppStore } from "@/stores";
 import { Transaction, TransactionType, Category } from "@/types";
 import { Button } from "@/components/ui/Button";
-import { cn } from "@/lib/utils";
+import { cn, getLocalDateStr } from "@/lib/utils";
 
 interface TransactionFormProps {
   householdId: string;
@@ -63,7 +63,7 @@ export function TransactionForm({ householdId, transaction }: TransactionFormPro
   const [type, setType] = useState<TransactionType>(transaction?.type ?? "expense");
   const [amountStr, setAmountStr] = useState(transaction ? String(transaction.amount) : "");
   const [categoryId, setCategoryId] = useState(transaction?.category_id ?? "");
-  const [date, setDate] = useState(transaction?.date ?? new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(transaction?.date ?? getLocalDateStr());
   const [memo, setMemo] = useState(transaction?.memo ?? "");
   const [writtenBy, setWrittenBy] = useState(transaction?.written_by ?? "");
   const [loading, setLoading] = useState(false);
